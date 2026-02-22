@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suhail Smart Browser</title>
 
+<!-- FIXED FONT LINK -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -47,19 +48,64 @@ body{
 }
 
 .container{
-    width:700px;
-    background:rgba(255,255,255,0.15);
-    backdrop-filter:blur(20px);
-    padding:40px;
-    border-radius:25px;
+    width:720px;
+    background:rgba(15,23,42,0.9);
+    backdrop-filter:blur(25px);
+    padding:45px;
+    border-radius:30px;
     text-align:center;
     color:white;
-    box-shadow:0 15px 40px rgba(0,0,0,0.4);
+    box-shadow:0 0 25px rgba(99,102,241,0.5);
     position:relative;
+    overflow:hidden;
+}
+
+/* Decorative Emojis */
+.container::before{
+    content:"✨";
+    position:absolute;
+    top:20px;
+    left:30px;
+    font-size:50px;
+    opacity:0.08;
+}
+
+.container::after{
+    content:"🚀";
+    position:absolute;
+    bottom:20px;
+    right:30px;
+    font-size:60px;
+    opacity:0.08;
 }
 
 h1{
-    margin-bottom:20px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size:14px;
+    opacity:0.7;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border-radius:50px;
+    border:none;
+    margin-top:15px;
+    font-size:16px;
+    outline:none;
+}
+
+button{
+    padding:8px 18px;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+    margin-top:15px;
+    background:#6366f1;
+    color:white;
 }
 
 .toggle{
@@ -67,38 +113,16 @@ h1{
     top:20px;
     right:20px;
     cursor:pointer;
-    font-size:20px;
-}
-
-input[type="text"]{
-    width:100%;
-    padding:15px;
-    border-radius:50px;
-    border:none;
-    margin-bottom:15px;
-    font-size:16px;
-}
-
-button{
-    padding:10px 20px;
-    border:none;
-    border-radius:20px;
-    cursor:pointer;
-    background:white;
-    margin:5px;
-}
-
-.drop-zone{
-    border:2px dashed white;
-    padding:25px;
-    border-radius:20px;
-    margin-top:20px;
 }
 
 .preview img{
     max-width:200px;
     margin-top:15px;
     border-radius:15px;
+}
+
+.image-search-box{
+    display:none;
 }
 </style>
 </head>
@@ -110,35 +134,72 @@ button{
 <div class="container">
     <div class="toggle" onclick="toggleTheme()">🌙</div>
 
-    <h1>Suhail Smart Browser 🚀</h1>
+    <h1>🚀 Suhail Smart Browser</h1>
+    <div class="subtitle">🌐 Smart Search | 🖼 Image Search | 🎤 Voice Enabled</div>
 
-    <!-- Web Search -->
-    <input type="text" id="searchInput" placeholder="Search anything...">
-    <button onclick="searchWeb()">Web Search</button>
+    <!-- WEB SEARCH -->
+    <input type="text" id="searchInput" placeholder="🔎 Search anything...">
+
     <button onclick="startVoice()">🎤 Voice Search</button>
 
-    <!-- Image Search -->
-    <div class="drop-zone">
-        <p>Upload or Drag & Drop Image for Search</p>
-        <input type="file" id="fileInput" accept="image/*">
-    </div>
+    <hr style="margin:25px 0;opacity:0.2;">
+
+    <!-- IMAGE SEARCH -->
+    <p>🖼 Upload Image for Search</p>
+    <input type="file" id="fileInput" accept="image/*">
 
     <div class="preview" id="preview"></div>
+
+    <!-- Appears after upload -->
+    <input type="text" id="imageSearchBox" class="image-search-box" placeholder="🔍 Search related keywords...">
 </div>
 
 <script>
 
-// WEB SEARCH
-function searchWeb(){
-    let query=document.getElementById("searchInput").value;
-    if(!query) return;
-    window.open("https://www.google.com/search?q="+encodeURIComponent(query),"_blank");
-}
+/* ENTER TO SEARCH */
+document.getElementById("searchInput").addEventListener("keydown",function(e){
+    if(e.key==="Enter"){
+        let query=this.value.trim();
+        if(!query) return;
 
-// VOICE SEARCH (Works in Chrome HTTPS)
+        if(query.includes(".") && !query.includes(" ")){
+            if(!query.startsWith("http")){
+                query="https://"+query;
+            }
+            window.open(query,"_blank");
+        }else{
+            window.open("https://www.google.com/search?q="+encodeURIComponent(query),"_blank");
+        }
+    }
+});
+
+/* IMAGE SEARCH AFTER UPLOAD */
+document.getElementById("fileInput").addEventListener("change",function(e){
+    const file=e.target.files[0];
+    if(!file) return;
+
+    const imageURL=URL.createObjectURL(file);
+
+    document.getElementById("preview").innerHTML=
+        `<img src="${imageURL}">`;
+
+    document.getElementById("imageSearchBox").style.display="block";
+});
+
+/* ENTER TO SEARCH IMAGE KEYWORDS */
+document.getElementById("imageSearchBox").addEventListener("keydown",function(e){
+    if(e.key==="Enter"){
+        let query=this.value.trim();
+        if(!query) return;
+
+        window.open("https://www.google.com/search?tbm=isch&q="+encodeURIComponent(query),"_blank");
+    }
+});
+
+/* VOICE SEARCH */
 function startVoice(){
     if(!('webkitSpeechRecognition' in window)){
-        alert("Voice search works only in Google Chrome over HTTPS.");
+        alert("Voice search works only in Chrome over HTTPS.");
         return;
     }
 
@@ -147,35 +208,19 @@ function startVoice(){
     recognition.start();
 
     recognition.onresult=function(event){
-        const speech=event.results[0][0].transcript;
-        document.getElementById("searchInput").value=speech;
-        searchWeb();
+        document.getElementById("searchInput").value=
+            event.results[0][0].transcript;
     };
 }
 
-// DARK MODE
+/* DARK MODE */
 function toggleTheme(){
     document.body.classList.toggle("dark");
 }
 
-// IMAGE SEARCH (Upload)
-document.getElementById("fileInput").addEventListener("change",function(e){
-    const file=e.target.files[0];
-    if(!file) return;
-
-    const imageURL=URL.createObjectURL(file);
-
-    document.getElementById("preview").innerHTML=
-    `<img src="${imageURL}">`;
-
-    // Opens Google Images (manual upload page)
-    window.open("https://images.google.com/","_blank");
-});
-
-// PARTICLE BACKGROUND
+/* PARTICLE BACKGROUND */
 const canvas=document.getElementById("bgCanvas");
 const ctx=canvas.getContext("2d");
-
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 
